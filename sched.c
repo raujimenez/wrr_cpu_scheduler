@@ -6206,7 +6206,7 @@ __setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio)
 	case SCHED_WRR:
 		p->sched_class = &wrr_sched_class;
 		p->wrr.time_slice = DEF_TIMESLICE * prio;
-		p->wrr.p = p;
+		p->wrr.process = p;
 		p->wrr.weight = prio;
 		p->wrr_group = current_uid();
 		break;
@@ -6441,7 +6441,7 @@ SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param 
 }
 
 //added by Jia Rao: implement the new system call. Borrow ideas from syscall sched_setscheduler
-SYSCALL_DEFINE3(set_wrr_scheduler, pid_t, pid, int, policy, truct sched_param __user *, int weight)
+SYSCALL_DEFINE3(set_wrr_scheduler, pid_t, pid, int, policy, struct sched_param __user *, int weight)
 {
 	int sys_return = do_sched_setscheduler(pid, policy, weight);
 	if(sys_return >= 0)
