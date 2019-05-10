@@ -6441,7 +6441,7 @@ SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param 
 }
 
 //added by Jia Rao: implement the new system call. Borrow ideas from syscall sched_setscheduler
-SYSCALL_DEFINE3(set_wrr_scheduler, pid_t, pid, int, policy, struct sched_param __user *, int weight)
+SYSCALL_DEFINE3(set_wrr_scheduler, pid_t, pid, int, policy, struct sched_param __user *, weight)
 {
 	int sys_return = do_sched_setscheduler(pid, policy, weight);
 	if(sys_return >= 0)
