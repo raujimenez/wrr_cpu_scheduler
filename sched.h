@@ -1213,6 +1213,30 @@ struct sched_rt_entity {
 //added by Jia Rao: define the wrr entity. 
 //It should at least include the pointer to the runqueue and its weight
 struct sched_wrr_entity {
+	//pointer to other process
+	struct list_head run_list;
+	
+	//taks_struct for the process
+	struct task_struct *process;
+	
+	//used for system call 
+	int weight;
+	
+	//time allocated to process
+	int time_slice;
+};
+struct sched_wrr_entity_group{
+	struct list_head run_list_users; // group pointers
+	struct list_head run_list; // user process
+
+	//id of group
+	int id;
+
+	//time given to group
+	int curr_time_slice;
+
+	//number of processes in group
+	int num_processes;
 };
 
 struct rcu_node;

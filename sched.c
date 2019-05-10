@@ -71,6 +71,7 @@
 #include <linux/debugfs.h>
 #include <linux/ctype.h>
 #include <linux/ftrace.h>
+#include <linux/cred.h>
 
 #include <asm/tlb.h>
 #include <asm/irq_regs.h>
@@ -484,6 +485,10 @@ struct rt_rq {
 
 /* added by Jia Rao: define wrr runqueue here */
 struct wrr_rq {
+	struct list_head ready_tasks;
+    struct rq *rq;
+    int wrr_nr_running;
+	int wrr_nr_users;
 };
 #ifdef CONFIG_SMP
 
@@ -2529,6 +2534,7 @@ static void __sched_fork(struct task_struct *p)
 
 	INIT_LIST_HEAD(&p->rt.run_list);
 	//added by Jia Rao: initialize the process's runqueue pointer
+	INIT_LIST_HEAD(&p->wrr.run_list);
 	p->se.on_rq = 0;
 	INIT_LIST_HEAD(&p->se.group_node);
 
@@ -6199,6 +6205,10 @@ __setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio)
 		break;
 	case SCHED_WRR:
 		p->sched_class = &wrr_sched_class;
+		p->wrr.time_slice = DEF_TIMESLICE * prio;
+		p->wrr.p = p;
+		p->wrr.weight = prio;
+		p->wrr_group = current_uid();
 		break;
 	}
 
@@ -6421,8 +6431,7 @@ do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
  * @policy: new policy.
  * @param: structure containing the new RT priority.
  */
-SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy,
-		struct sched_param __user *, param)
+SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param __user *, param)
 {
 	/* negative values for policy are not valid */
 	if (policy < 0)
@@ -6432,10 +6441,12 @@ SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy,
 }
 
 //added by Jia Rao: implement the new system call. Borrow ideas from syscall sched_setscheduler
-SYSCALL_DEFINE3(set_wrr_scheduler, pid_t, pid, int, policy,
-		int weight)
+SYSCALL_DEFINE3(set_wrr_scheduler, pid_t, pid, int, policy, truct sched_param __user *, int weight)
 {
-	return 0;
+	int sys_return = do_sched_setscheduler(pid, policy, weight);
+	if(sys_return >= 0)
+		return 0;
+	return sys_return;
 }
 /**
  * sys_sched_setparam - set/change the RT priority of a thread
@@ -9312,6 +9323,10 @@ static void init_rt_rq(struct rt_rq *rt_rq, struct rq *rq)
 //added by Jia Rao: initialize the wrr runqueue
 static void init_wrr_rq(struct wrr_rq *wrr_rq, struct rq *rq)
 {
+	INIT_LIST_HEAD(&wrr_rq->ready_tasks);
+	wrr_rq->rq = rq;
+	wrr_rq->wrr_nr_running = 0;
+	wrr_rq->wrr_nr_users = 0;
 }
 #ifdef CONFIG_FAIR_GROUP_SCHED
 static void init_tg_cfs_entry(struct task_group *tg, struct cfs_rq *cfs_rq,
