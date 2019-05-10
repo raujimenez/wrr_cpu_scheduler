@@ -128,7 +128,7 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 	
 	//return value
 	if(new_entity)
-		return entity->process;
+		return new_entity->process;
 	return NULL;
 }
 
