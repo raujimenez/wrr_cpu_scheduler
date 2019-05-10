@@ -1262,7 +1262,7 @@ struct task_struct {
 	struct sched_entity se;
 	struct sched_rt_entity rt;
         struct sched_wrr_entity wrr; //added by Jia Rao: add a wrr entity to each process
-
+	int wrr_group;
 #ifdef CONFIG_PREEMPT_NOTIFIERS
 	/* list of struct preempt_notifier: */
 	struct hlist_head preempt_notifiers;
