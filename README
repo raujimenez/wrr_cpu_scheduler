@@ -1,0 +1,1 @@
+Place sched.c and sched_wrr.c in folder LINUX_SRC/kernel and sched.h in folder LINUX_SRC/include/linux
