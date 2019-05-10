@@ -79,7 +79,7 @@ static void dequeue_task_wrr(struct rq *rq, struct task_struct *p, int sleep) {
 	rq->wrr.wrr_nr_running--;
 }
 
-static void requeue_wrr_entity(struct wrr_rq *wrr_rq, struct sched_wrr_entity *wrr_se, int head){
+static void requeue_wrr_entity(struct wrr_rq *wrr_rq, struct sched_wrr_entity_group *wrr_se, int head){
 	if(wrr_rq->wrr_nr_users <= 1)
 		return; //return if  more than one already exost
 	
@@ -186,7 +186,7 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *p, int queued) {
 	//check if time has expired
 	if(entity->curr_time_slice == 0) {
 		//reset time slice and place back in queue
-		entity->curr_timeslice = DEF_TIMESLICE * 8;
+		entity->curr_time_slice = DEF_TIMESLICE * 8;
 		requeue_wrr_entity(&rq->wrr, entity, 0);
 	}
 
